@@ -24,7 +24,10 @@ def weighted_sum(states, weights):
     w_sum = 0
 
     for idx in range(len(weights)):
-        w_sum += weights[idx] * states[idx]
+        if idx == 0:
+            w_sum -= weights[idx] * states[idx]
+        else:
+            w_sum += weights[idx] * states[idx]
 
     return w_sum
 
@@ -72,7 +75,7 @@ def evaluation_function(para_seq, dataset):
 
 
 def main_process():
-    paras = [random.randrange(-1, 1) for idx in range(3)]
+    paras = [random.randrange(0, 2) for idx in range(3)]
     print paras
     test_times = 10
     # prev_error = evaluation_function(paras, ld_1)
