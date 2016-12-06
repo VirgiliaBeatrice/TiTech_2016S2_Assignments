@@ -1,7 +1,8 @@
 import math
 import random
 
-rand_seq = [random.randint(0, 1) for dummy_idx in range(16)]
+num_neurons = 16
+rand_seq = [random.randint(0, 1) for dummy_idx in range(num_neurons)]
 
 
 class HopfieldNeuronNetwork:
@@ -11,7 +12,7 @@ class HopfieldNeuronNetwork:
         self.states = states
         self.weights = weights
         self.thresholds = thresholds
-        self.latest_energy = calculate_energy(self.states)
+        self.latest_energy = energy_calculation_queen(self.states)
         self.gain = gain
         print u"Initial states: "
         print self.states
@@ -44,7 +45,7 @@ class HopfieldNeuronNetwork:
         else:
             self.states[update_idx] = 1
 
-        self.latest_energy = calculate_energy(self.states)
+        self.latest_energy = energy_calculation_queen(self.states)
 
         if self.debug_flag:
             print u"Current states: "
@@ -59,7 +60,7 @@ class HopfieldNeuronNetwork:
         else:
             self.states[update_idx - 1] = 1
 
-        self.latest_energy = calculate_energy(self.states)
+        self.latest_energy = energy_calculation_queen(self.states)
 
         if self.debug_flag:
             print u"Current states: "
@@ -67,44 +68,48 @@ class HopfieldNeuronNetwork:
             print u"Energy: " + str(self.latest_energy)
 
 
-def calculate_energy(sequence):
+def energy_calculation_queen(sequence):
     energy_1 = 0
     energy_2 = 0
-    array = []
 
-    for idx in range(len(sequence) / 4):
-        array.append(sequence[(4 * idx):(4 * (idx + 1))])
+    # Reform target matrix
+    target_matrix = []
+    dim = int(math.sqrt(num_neurons))
+    for idx in range(len(sequence) / dim):
+        target_matrix.append(sequence[(dim * idx):(dim * (idx + 1))])
 
-    for row_idx in range(len(array)):
+    # Calculate first part of energy
+    for row_idx in range(dim):
         temp_sum = 0
-        for col_idx in range(len(array)):
-            temp_sum += array[row_idx][col_idx]
+        for col_idx in range(dim):
+            temp_sum += target_matrix[row_idx][col_idx]
+        energy_1 += (temp_sum - 1) ** 2
 
-        energy_1 += math.pow(temp_sum - 1, 2)
-
-    for col_idx in range(len(array)):
+    # Calculate second part of energy
+    for col_idx in range(len(target_matrix)):
         temp_sum = 0
-        for row_idx in range(len(array)):
-            temp_sum += array[row_idx][col_idx]
-
-        energy_2 += math.pow(temp_sum - 1, 2)
+        for row_idx in range(len(target_matrix)):
+            temp_sum += target_matrix[row_idx][col_idx]
+        energy_2 += (temp_sum - 1) ** 2
 
     return energy_1 + energy_2
 
 
 def pre_calculation():
-    zero_seq = [0 for dummy_idx in range(16)]
+    zero_seq = [0 for dummy_idx in range(num_neurons)]
     calc_seq = zero_seq[:]
 
     thresholds = []
-    zero_energy = calculate_energy(zero_seq)
-    i_energy = []
-    ij_energy = {}
     weights = {}
 
-    for idx in range(16):
+    ij_energy = {}
+
+    zero_energy = energy_calculation_queen(zero_seq)
+
+    i_energy = []
+    for idx in range(num_neurons):
         calc_seq[idx] = 1
-        i_energy.append(calculate_energy(calc_seq))
+        i_energy.append(energy_calculation_queen(calc_seq))
         thresholds.append(i_energy[idx] - zero_energy)
         calc_seq[idx] = 0
 
@@ -114,12 +119,12 @@ def pre_calculation():
                 calc_seq[idx_i] = 1
                 calc_seq[idx_j] = 1
                 index = tuple(sorted([idx_i, idx_j]))
-                ij_energy[index] = calculate_energy(calc_seq)
+                ij_energy[index] = energy_calculation_queen(calc_seq)
                 weights[index] = (
-                    -ij_energy[index] +
-                    i_energy[idx_i] +
-                    i_energy[idx_j] +
-                    zero_energy
+                    thresholds[idx_i] +
+                    thresholds[idx_j] +
+                    zero_energy -
+                    ij_energy[index]
                 )
                 calc_seq[idx_i] = 0
                 calc_seq[idx_j] = 0
@@ -150,17 +155,23 @@ def calculate_d(sequence):
     return count
 
 
-if __name__ == '__main__':
+def main_process():
     mapping = num_mapping()
     print mapping
     inits = pre_calculation()
     result = []
     # print result
     hnn = HopfieldNeuronNetwork(rand_seq,
-                                inits[0], inits[1], gain=0.25, debug=True)
+                                inits[0], inits[1], gain=1, debug=False)
     for idx in range(100):
         hnn.update_state(random.randint(0, 15))
         # hnn.update_state_possibility(random.randint(0, 15))
         result.append(hnn.latest_energy)
+    print u"Final states: "
+    print hnn.states
     print calculate_d(result)
     print set(result)
+
+
+if __name__ == '__main__':
+    main_process()
