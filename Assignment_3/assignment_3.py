@@ -1,6 +1,7 @@
 import math
 import random
-
+import numpy as np
+import matplotlib.pyplot as plt
 
 # linear_array
 ARRAY = [
@@ -9,9 +10,16 @@ ARRAY = [
     ((1, 2, 3, 4, 5), (-1, -1, -2, 1, 3)),
     ((1, 2, 3, 4, 5), (1, -2, 1, 1, 1))
 ]
+
 SIZE = len(ARRAY) + 1
 x_array = (1, 1, 1, 1)
-gains = [0.25, 0.5, 1, 2, 4]
+font = {
+    'fontname': 'Arial',
+    # 'fontname': 'Helvetica',
+    # 'color':  'darkred',
+    'weight': 'normal',
+    'size': 20,
+}
 
 
 class HopfieldNeuronNetwork:
@@ -44,13 +52,12 @@ class HopfieldNeuronNetwork:
                                             self.thresholds[main_idx - 1][1])))
                 )
 
-    def update_state(self, update_idx):
-        minus = (self._weighted_sum_(update_idx) -
-                 self.thresholds[update_idx - 1][1])
-
-        if minus < 0:
+    def update_state_possibility(self, update_idx):
+        rand = random.random()
+        result = self._sigmoid_(update_idx)
+        if rand >= result:
             self.states[update_idx - 1] = 0
-        elif minus > 0:
+        else:
             self.states[update_idx - 1] = 1
 
         if self.debug_flag:
@@ -84,7 +91,7 @@ class HopfieldNeuronNetwork:
             print u"Energy: " + str(self.latest_energy)
 
 
-def equation_sqrt(linear_array, result):
+def equation_pow(linear_array, result):
     for idx_x in range(0, SIZE):
         item = linear_array[0][idx_x]
         value = linear_array[1][idx_x]
@@ -122,6 +129,24 @@ def standardize_energy(array):
     return sorted(theta), sorted(omega), sorted(other)
 
 
+def plot(sequence):
+    plt.figure(figsize=(10, 10))
+    x = np.linspace(0, len(sequence), len(sequence))
+    y = sequence
+
+    plt.plot(x, y, label=r"$\frac{1}{1 + e^{-4x}}$", color="green", linewidth=1.5)
+
+    # plt.title(u'Sigmoid Function with Different \u03b1 Value', fontdict=font)
+    # plt.xlabel('time (s)', fontdict=font)
+    # plt.ylabel('voltage (mV)', fontdict=font)
+    # plt.ylim(0, 6)
+
+    # Tweak spacing to prevent clipping of ylabel
+    # plt.subplots_adjust(left=0.15)
+    plt.legend(loc=4, fontsize=18)
+    plt.show()
+
+
 def calculate_d(sequence):
     # sequence = []
     temp_set = set(sequence)
@@ -135,18 +160,19 @@ def calculate_d(sequence):
 def main_process():
     result = {}
     for item in ARRAY:
-        equation_sqrt(item, result)
+        equation_pow(item, result)
     temp = standardize_energy(result)
     hnn = HopfieldNeuronNetwork([random.randint(0, 1) for idx in range(4)],
-                                temp[1], temp[0], temp[2], gain=1, debug=False)
+                                temp[1], temp[0], temp[2], gain=0.5, debug=False)
     input_sequence = []
-    for idx in range(10000):
-        hnn.update_state(random.randint(1, len(ARRAY)))
+    for idx in range(1000):
+        hnn.update_state_possibility(random.randint(1, len(ARRAY)))
         hnn.calculate_energy()
-        input_sequence.append(hnn.latest_energy)
+        input_sequence.append(tuple(hnn.states))
     print calculate_d(input_sequence)
-
+    plot(input_sequence)
+    plot(calculate_d(input_sequence).values())
+    pass
 
 if __name__ == '__main__':
     main_process()
-    pass

@@ -164,8 +164,8 @@ def main_process():
     hnn = HopfieldNeuronNetwork(rand_seq,
                                 inits[0], inits[1], gain=1, debug=False)
     for idx in range(100):
-        hnn.update_state(random.randint(0, 15))
-        # hnn.update_state_possibility(random.randint(0, 15))
+        # hnn.update_state(random.randint(0, 15))
+        hnn.update_state_possibility(random.randint(0, 15))
         result.append(hnn.latest_energy)
     print u"Final states: "
     print hnn.states
