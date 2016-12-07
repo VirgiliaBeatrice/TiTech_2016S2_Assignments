@@ -71,7 +71,7 @@ def main_process():
     paras = [random.randrange(0, 2) for idx in range(3)]
     # paras = [-1.0, 2.0, 3.0]
     print paras
-    test_times = 10000
+    test_times = 1000
     # prev_error = evaluation_function(paras, ld_1)
     # print prev_error
     for idx in range(test_times):
@@ -79,8 +79,9 @@ def main_process():
         curr_error = evaluation_function(paras, ld_1)
 
         print curr_error
-
+        print u"||----------------||"
         for key, value in ld_1.iteritems():
+            print u"----------------"
             print key
             print u"Target Value: " + str(value)
             print u"Output Value: " + str(sigmoid(key, paras, 1.0))

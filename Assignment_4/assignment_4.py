@@ -162,15 +162,22 @@ def main_process():
     result = []
     # print result
     hnn = HopfieldNeuronNetwork(rand_seq,
-                                inits[0], inits[1], gain=1, debug=False)
-    for idx in range(100):
+                                inits[0], inits[1], gain=0.5, debug=False)
+    for idx in range(10000):
         # hnn.update_state(random.randint(0, 15))
         hnn.update_state_possibility(random.randint(0, 15))
-        result.append(hnn.latest_energy)
+        if hnn.latest_energy == 0:
+            result.append(tuple(hnn.states))
     print u"Final states: "
     print hnn.states
     print calculate_d(result)
     print set(result)
+    for item in list(set(result)):
+        print u"----------"
+        print item[0:4]
+        print item[4:8]
+        print item[8:12]
+        print item[12:16]
 
 
 if __name__ == '__main__':

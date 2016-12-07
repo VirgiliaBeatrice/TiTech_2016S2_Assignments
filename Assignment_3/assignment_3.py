@@ -131,10 +131,20 @@ def standardize_energy(array):
 
 def plot(sequence):
     plt.figure(figsize=(10, 10))
-    x = np.linspace(0, len(sequence), len(sequence))
-    y = sequence
 
-    plt.plot(x, y, label=r"$\frac{1}{1 + e^{-4x}}$", color="green", linewidth=1.5)
+    d1 = sequence[0]
+    d2 = sequence[1]
+    d3 = sequence[2]
+
+    # plt.bar(range(len(d1)), d1.values())
+    # plt.xticks(range(len(d1)), d1.keys())
+    plt.bar(range(len(d2)), d2.values())
+    plt.xticks(range(len(d2)), d2.keys())
+    # plt.bar(range(len(d3)), d3.values())
+    # plt.xticks(range(len(d3)), d3.keys())
+    # plt.plot(x1, y1, label=r"$\alpha = 0.1$", color="green", linewidth=1.5)
+    # plt.plot(x2, y2, label=r"$\alpha = 0.5$", color="red", linewidth=1.5)
+    # plt.plot(x3, y3, label=r"$\alpha = 1.0$", color="yellow", linewidth=1.5)
 
     # plt.title(u'Sigmoid Function with Different \u03b1 Value', fontdict=font)
     # plt.xlabel('time (s)', fontdict=font)
@@ -162,16 +172,23 @@ def main_process():
     for item in ARRAY:
         equation_pow(item, result)
     temp = standardize_energy(result)
-    hnn = HopfieldNeuronNetwork([random.randint(0, 1) for idx in range(4)],
-                                temp[1], temp[0], temp[2], gain=0.5, debug=False)
-    input_sequence = []
-    for idx in range(1000):
-        hnn.update_state_possibility(random.randint(1, len(ARRAY)))
-        hnn.calculate_energy()
-        input_sequence.append(tuple(hnn.states))
-    print calculate_d(input_sequence)
-    plot(input_sequence)
-    plot(calculate_d(input_sequence).values())
+
+    seq = []
+    for time in (100, 1000, 5000):
+        input_sequence = []
+        hnn = HopfieldNeuronNetwork([random.randint(0, 1) for idx in range(4)],
+                                    temp[1], temp[0], temp[2], gain=1.0, debug=False)
+
+        for idx in range(time):
+            hnn.update_state_possibility(random.randint(1, len(ARRAY)))
+            hnn.calculate_energy()
+            input_sequence.append(hnn.latest_energy)
+
+        seq.append(calculate_d(input_sequence))
+
+    print seq
+    # plot(seq)
+    plot(seq)
     pass
 
 if __name__ == '__main__':

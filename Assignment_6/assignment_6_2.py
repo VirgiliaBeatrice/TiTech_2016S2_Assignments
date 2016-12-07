@@ -100,7 +100,7 @@ def main_process():
     para_layer2 = [random.randrange(0, 2) for idx in range(4)]
     print para_layer1
     print para_layer2
-    test_times = 10000
+    test_times = 1000
     for idx in range(test_times):
         result = update_parameters(para_layer1, para_layer2, ld_1)
         para_layer1 = result[0]
